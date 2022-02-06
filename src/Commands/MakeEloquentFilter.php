@@ -39,7 +39,7 @@ class MakeEloquentFilter extends Command
     /**
      * MakeEloquentFilter constructor.
      *
-     * @param Filesystem $files
+     * @param  Filesystem  $files
      */
     public function __construct(Filesystem $files)
     {
@@ -63,7 +63,7 @@ class MakeEloquentFilter extends Command
     {
         if ($this->files->exists($path = $this->getPath())) {
             $this->error("\n\n\t".$path.' Already Exists!'."\n");
-            die;
+            exit;
         }
         $this->makeDirectory($path);
 
@@ -71,7 +71,7 @@ class MakeEloquentFilter extends Command
 
         if (! $this->files->exists($stubPath) || ! is_readable($stubPath)) {
             $this->error(sprintf('File "%s" does not exist or is unreadable.', $stubPath));
-            die;
+            exit;
         }
 
         $tmp = $this->applyValuesToStub($this->files->get($stubPath));
@@ -112,7 +112,7 @@ class MakeEloquentFilter extends Command
     /**
      * Build the directory for the class if necessary.
      *
-     * @param  string $path
+     * @param  string  $path
      * @return string
      */
     protected function makeDirectory($path)
@@ -141,7 +141,7 @@ class MakeEloquentFilter extends Command
 
         if (class_exists($fqClass)) {
             $this->error("\n\n\t$fqClass Already Exists!\n");
-            die;
+            exit;
         }
 
         $this->setClassName($fqClass);

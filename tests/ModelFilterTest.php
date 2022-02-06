@@ -27,7 +27,7 @@ class ModelFilterTest extends TestCase
      */
     protected $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->builder = m::mock(EloquentBuilder::class);
         $this->filter = new TestModelFilter($this->builder);
@@ -35,7 +35,7 @@ class ModelFilterTest extends TestCase
         $this->testInput = $this->config['test_input'];
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }
@@ -46,6 +46,8 @@ class ModelFilterTest extends TestCase
         // Remove empty strings from the input
         foreach ($filteredInput as $val) {
             $this->assertNotEquals($val, '');
+            $this->assertNotNull($val);
+            $this->assertFalse(is_array($val) && empty($val));
         }
     }
 
@@ -94,7 +96,7 @@ class ModelFilterTest extends TestCase
         $this->filter->push($filteredInput);
 
         // All keys are in tact
-        foreach ($this->testInput as $key => $val) {
+        foreach ($this->filter->input() as $key => $val) {
             $this->assertEquals($this->filter->input($key), $this->testInput[$key]);
         }
 
@@ -165,11 +167,15 @@ class ModelFilterTest extends TestCase
     public function testGetFilterInputForRelationsArray()
     {
         $this->filter->relations = [
-            'roles' => ['roles'],
+            'roles' => ['roles', 'enabled', 'flagged'],
         ];
         $this->filter->push($this->testInput);
 
-        $this->assertEquals($this->filter->getRelatedFilterInput('roles'), ['roles' => $this->filter->input('roles')]);
+        $this->filter->push(['enabled' => 0]);
+
+        $this->filter->push(['flagged' => 1]);
+
+        $this->assertEquals($this->filter->getRelatedFilterInput('roles'), ['roles' => $this->filter->input('roles'), 'enabled' => $this->filter->input('enabled'), 'flagged' => $this->filter->input('flagged')]);
     }
 
     /**
@@ -187,7 +193,7 @@ class ModelFilterTest extends TestCase
         // Return closure
         $relatedClosure = $this->filter->getLocalRelation('testRelation')[0];
 
-        $this->assertInternalType('callable', $relatedClosure);
+        $this->assertIsCallable($relatedClosure);
 
         $query = m::mock(EloquentBuilder::class);
 
@@ -205,7 +211,7 @@ class ModelFilterTest extends TestCase
 
         $relatedClosure = $this->filter->getLocalRelation('fakeRelation')[0];
 
-        $this->assertInternalType('callable', $relatedClosure);
+        $this->assertIsCallable($relatedClosure);
 
         $query = m::mock(EloquentBuilder::class);
 
@@ -223,7 +229,7 @@ class ModelFilterTest extends TestCase
 
         $relatedClosure = $this->filter->getLocalRelation('fakeRelation')[0];
 
-        $this->assertInternalType('callable', $relatedClosure);
+        $this->assertIsCallable($relatedClosure);
 
         $query = m::mock(EloquentBuilder::class);
 
